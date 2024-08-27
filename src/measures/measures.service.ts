@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { GeminiaiService } from 'src/geminiai/geminiai.service';
 import { Repository } from 'typeorm';
 import { Measure } from './measure.entity';
 import { ConfirmMeasureDto, CreateMeasureDto } from './measures.dto';
@@ -8,11 +9,11 @@ import { ConfirmMeasureDto, CreateMeasureDto } from './measures.dto';
 export class MeasuresService {
   constructor(
     @InjectRepository(Measure) private measureRepository: Repository<Measure>,
+    @Inject() private geminiAI: GeminiaiService,
   ) {}
 
-  create(createUploadDto: CreateMeasureDto) {
-    console.log(createUploadDto);
-    return 'This action adds a new upload';
+  async create(createUploadDto: CreateMeasureDto) {
+    return await this.geminiAI.run(createUploadDto.image);
   }
 
   findByCustomerCode() {

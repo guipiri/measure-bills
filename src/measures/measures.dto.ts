@@ -1,20 +1,28 @@
-import { IsBase64, IsDateString, IsEnum, IsString } from 'class-validator';
+import {
+  IsBase64,
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 
 export enum MeasureTypeEnum {
-  GAS,
-  WATER,
+  GAS = 'GAS',
+  WATER = 'WATER',
 }
 
 export enum MeasureStatusEnum {
-  CONFIRMED,
-  MEASURED,
+  CONFIRMED = 'CONFIRMED',
+  MEASURED = 'MEASURED',
 }
 
 export class CreateMeasureDto {
   @IsBase64()
+  @IsNotEmpty()
   image: string;
 
   @IsString()
+  @IsNotEmpty()
   customer_code: string;
 
   @IsEnum(MeasureTypeEnum)

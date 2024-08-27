@@ -6,9 +6,9 @@ import { MeasuresService } from './measures.service';
 export class MeasuresController {
   constructor(private readonly uploadsService: MeasuresService) {}
 
-  @Post('uploads')
-  create(@Body() createMeasureDto: CreateMeasureDto) {
-    return this.uploadsService.create(createMeasureDto);
+  @Post('upload')
+  async create(@Body() createMeasureDto: CreateMeasureDto) {
+    return await this.uploadsService.create(createMeasureDto);
   }
 
   @Get(':customerCode/list')
