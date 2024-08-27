@@ -1,15 +1,17 @@
 import {
   Column,
   CreateDateColumn,
+  Entity,
   PrimaryGeneratedColumn,
   Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
 import { MeasureStatusEnum, MeasureTypeEnum } from './measures.dto';
 
+@Entity()
 export class Measure {
   @PrimaryGeneratedColumn('uuid')
-  measure_id: string;
+  measure_uuid: string;
 
   @Column()
   image: string;
@@ -20,10 +22,10 @@ export class Measure {
   @Column({ enum: MeasureTypeEnum })
   measure_type: MeasureTypeEnum;
 
-  @Column()
+  @Column({ nullable: true })
   measure_value: number;
 
-  @Column()
+  @Column({ nullable: true })
   confirmed_value: number;
 
   @Column({ default: 'MEASURED', enum: MeasureStatusEnum })

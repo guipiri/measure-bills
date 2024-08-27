@@ -12,8 +12,22 @@ export class MeasuresService {
     @Inject() private geminiAI: GeminiaiService,
   ) {}
 
-  async create(createUploadDto: CreateMeasureDto) {
-    return await this.geminiAI.run(createUploadDto.image);
+  async create({
+    customer_code,
+    image,
+    measure_datetime,
+    measure_type,
+  }: CreateMeasureDto) {
+    const { total: measure_value } = await this.geminiAI.run(image);
+    const { measure_uuid } = await this.measureRepository.save({
+      image,
+      customer_code,
+      measure_datetime,
+      measure_type,
+      measure_value: Number(measure_value),
+    });
+
+    return { measure_value, measure_uuid, image_url: '' };
   }
 
   findByCustomerCode() {

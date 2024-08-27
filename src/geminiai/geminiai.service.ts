@@ -51,7 +51,7 @@ export class GeminiaiService {
     }
   }
 
-  async run(base64String: string) {
+  async run(base64String: string): Promise<{ total: string | number }> {
     this.base64ToJPEG(base64String);
     const file = await this.uploadFileToGemini();
 
@@ -64,6 +64,6 @@ export class GeminiaiService {
       },
     ]);
 
-    return result.response.text();
+    return JSON.parse(result.response.text());
   }
 }
