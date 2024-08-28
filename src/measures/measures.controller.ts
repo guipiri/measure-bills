@@ -2,11 +2,14 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   Patch,
   Post,
   Query,
+  UseFilters,
 } from '@nestjs/common';
+import { HttpExceptionFilter } from 'src/http-exception/http-exception.filter';
 import {
   ConfirmMeasureDto,
   CreateMeasureDto,
@@ -15,12 +18,16 @@ import {
 import { MeasuresService } from './measures.service';
 
 @Controller()
+@UseFilters(new HttpExceptionFilter())
 export class MeasuresController {
   constructor(private readonly uploadsService: MeasuresService) {}
 
   @Post('upload')
-  async create(@Body() createMeasureDto: CreateMeasureDto) {
-    return await this.uploadsService.create(createMeasureDto);
+  async create(
+    @Body() createMeasureDto: CreateMeasureDto,
+    @Headers('host') host: string,
+  ) {
+    return await this.uploadsService.create(createMeasureDto, host);
   }
 
   @Get(':customerCode/list')

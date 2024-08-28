@@ -13,7 +13,7 @@ export class Measure {
   @PrimaryGeneratedColumn('uuid')
   measure_uuid: string;
 
-  @Column()
+  @Column({ nullable: true })
   image_url: string;
 
   @Column()

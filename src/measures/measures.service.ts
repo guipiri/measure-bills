@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GeminiaiService } from 'src/geminiai/geminiai.service';
 import { Repository } from 'typeorm';
@@ -13,40 +18,57 @@ import {
 export class MeasuresService {
   constructor(
     @InjectRepository(Measure) private measureRepository: Repository<Measure>,
-    @Inject() private geminiAI: GeminiaiService,
+    private readonly geminiAIService: GeminiaiService,
+    private readonly configService: ConfigService,
   ) {}
 
-  async create({
-    customer_code,
-    image,
-    measure_datetime,
-    measure_type,
-  }: CreateMeasureDto) {
-    const { total: measure_value } = await this.geminiAI.run(image);
+  async create(
+    { customer_code, image, measure_datetime, measure_type }: CreateMeasureDto,
+    host: string,
+  ) {
+    // Se já realizada a leitura no mês disparar: throw new HttpException(undefined, HttpStatus.CONFLICT);
 
     const { measure_uuid } = await this.measureRepository.save({
-      image_url: 'alguma url aqui',
       customer_code,
       measure_datetime,
       measure_type,
-      measure_value: Number(measure_value),
     });
 
-    return { measure_value, measure_uuid, image_url: '' };
+    const { total: measure_value } = await this.geminiAIService.run(
+      image,
+      measure_uuid,
+    );
+
+    const image_url = `http://${host}/images/${measure_uuid}.jpeg`;
+
+    await this.measureRepository.update(
+      { measure_uuid },
+      {
+        measure_value: Number(measure_value),
+        image_url,
+      },
+    );
+
+    return { measure_value, measure_uuid, image_url };
   }
 
   async findAllMeasuresByCustomerCode(
     customer_code: string,
-    measure_type?: MeasureTypeEnum,
+    measureType?: MeasureTypeEnum,
   ) {
-    const measures = this.measureRepository.find({
+    if (measureType && !MeasureTypeEnum[measureType.toUpperCase()]) {
+      throw new BadRequestException();
+    }
+
+    const measures = await this.measureRepository.find({
       where: {
         customer_code,
-        measure_type: measure_type
-          ? MeasureTypeEnum[measure_type.toUpperCase()]
-          : undefined,
+        measure_type: measureType && MeasureTypeEnum[measureType.toUpperCase()],
       },
     });
+
+    if (measures.length === 0) throw new NotFoundException();
+
     return { customer_code, measures };
   }
 

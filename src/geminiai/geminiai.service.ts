@@ -2,12 +2,15 @@ import { GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai';
 import { GoogleAIFileManager } from '@google/generative-ai/server';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { writeFileSync } from 'node:fs';
 import { GEMINI_MODEL, GEMINI_SYSTEM_INSTRUCTIONS } from 'src/constants';
+import { ImagesService } from 'src/images/images.service';
 
 @Injectable()
 export class GeminiaiService {
-  constructor(private configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly imageService: ImagesService,
+  ) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
 
     this.genAI = new GoogleGenerativeAI(apiKey);
@@ -23,7 +26,6 @@ export class GeminiaiService {
   private genAI: GoogleGenerativeAI;
   private fileManager: GoogleAIFileManager;
   private model: GenerativeModel;
-  private filePath = __dirname + '/image.jpeg';
 
   private generationConfig = {
     temperature: 1,
@@ -33,16 +35,11 @@ export class GeminiaiService {
     responseMimeType: 'application/json',
   };
 
-  private base64ToJPEG(base64: string) {
-    const buffer = Buffer.from(base64, 'base64');
-    writeFileSync(this.filePath, buffer, { encoding: 'base64' });
-  }
-
-  private async uploadFileToGemini() {
+  private async uploadFileToGemini(filePath: string) {
     try {
-      const uploadResult = await this.fileManager.uploadFile(this.filePath, {
+      const uploadResult = await this.fileManager.uploadFile(filePath, {
         mimeType: 'image/jpeg',
-        displayName: this.filePath,
+        displayName: filePath,
       });
       const file = uploadResult.file;
       return file;
@@ -51,9 +48,13 @@ export class GeminiaiService {
     }
   }
 
-  async run(base64String: string): Promise<{ total: string | number }> {
-    this.base64ToJPEG(base64String);
-    const file = await this.uploadFileToGemini();
+  async run(
+    base64String: string,
+    measure_uuid: string,
+  ): Promise<{ total: string | number }> {
+    const filePath = this.imageService.base64ToJPEG(base64String, measure_uuid);
+
+    const file = await this.uploadFileToGemini(filePath);
 
     const result = await this.model.generateContent([
       {
