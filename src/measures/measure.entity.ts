@@ -6,7 +6,7 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
-import { MeasureStatusEnum, MeasureTypeEnum } from './measures.dto';
+import { MeasureTypeEnum } from './measures.dto';
 
 @Entity()
 export class Measure {
@@ -14,7 +14,7 @@ export class Measure {
   measure_uuid: string;
 
   @Column()
-  image: string;
+  image_url: string;
 
   @Column()
   customer_code: string;
@@ -28,8 +28,8 @@ export class Measure {
   @Column({ nullable: true })
   confirmed_value: number;
 
-  @Column({ default: 'MEASURED', enum: MeasureStatusEnum })
-  status: MeasureStatusEnum;
+  @Column({ default: false, type: 'boolean' })
+  has_confirmed: boolean;
 
   @Column({ type: 'timestamp with time zone' })
   measure_datetime: Timestamp;

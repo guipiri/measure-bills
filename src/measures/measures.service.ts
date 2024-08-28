@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { GeminiaiService } from 'src/geminiai/geminiai.service';
 import { Repository } from 'typeorm';
 import { Measure } from './measure.entity';
-import { ConfirmMeasureDto, CreateMeasureDto } from './measures.dto';
+import {
+  ConfirmMeasureDto,
+  CreateMeasureDto,
+  MeasureTypeEnum,
+} from './measures.dto';
 
 @Injectable()
 export class MeasuresService {
@@ -19,8 +23,9 @@ export class MeasuresService {
     measure_type,
   }: CreateMeasureDto) {
     const { total: measure_value } = await this.geminiAI.run(image);
+
     const { measure_uuid } = await this.measureRepository.save({
-      image,
+      image_url: 'alguma url aqui',
       customer_code,
       measure_datetime,
       measure_type,
@@ -30,8 +35,19 @@ export class MeasuresService {
     return { measure_value, measure_uuid, image_url: '' };
   }
 
-  findByCustomerCode() {
-    return `This action returns all uploads`;
+  async findAllMeasuresByCustomerCode(
+    customer_code: string,
+    measure_type?: MeasureTypeEnum,
+  ) {
+    const measures = this.measureRepository.find({
+      where: {
+        customer_code,
+        measure_type: measure_type
+          ? MeasureTypeEnum[measure_type.toUpperCase()]
+          : undefined,
+      },
+    });
+    return { customer_code, measures };
   }
 
   confirm(confirmMeasureDto: ConfirmMeasureDto) {
