@@ -2,8 +2,10 @@ import {
   IsBase64,
   IsDateString,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
 export enum MeasureTypeEnum {
@@ -32,4 +34,10 @@ export class CreateMeasureDto {
   measure_datetime: Date;
 }
 
-export class ConfirmMeasureDto {}
+export class ConfirmMeasureDto {
+  @IsUUID()
+  measure_uuid: string;
+
+  @IsInt()
+  confirmed_value: number;
+}

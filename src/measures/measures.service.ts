@@ -98,7 +98,17 @@ export class MeasuresService {
     return { customer_code, measures };
   }
 
-  confirm(confirmMeasureDto: ConfirmMeasureDto) {
-    return `This action updates a measure ${confirmMeasureDto}`;
+  async confirm({ measure_uuid, confirmed_value }: ConfirmMeasureDto) {
+    const measureWithProvidedUuid = await this.measureRepository.findOne({
+      where: { measure_uuid },
+    });
+
+    if (!measureWithProvidedUuid) throw new NotFoundException();
+    if (measureWithProvidedUuid.has_confirmed) throw new ConflictException();
+    await this.measureRepository.update(
+      { measure_uuid },
+      { confirmed_value, has_confirmed: true },
+    );
+    return { success: true };
   }
 }

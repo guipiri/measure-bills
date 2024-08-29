@@ -24,7 +24,7 @@ export class Measure {
   @Column({ nullable: true })
   measure_value: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'int' })
   confirmed_value: number;
 
   @Column({ default: false, type: 'boolean' })
