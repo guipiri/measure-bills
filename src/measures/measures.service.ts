@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GeminiaiService } from 'src/geminiai/geminiai.service';
+import { compareMonths } from 'src/utils/compareMonths';
+import { generateImageUrl } from 'src/utils/generateImageUrl';
 import { Repository } from 'typeorm';
 import { Measure } from './measure.entity';
 import {
@@ -19,28 +21,52 @@ export class MeasuresService {
   constructor(
     @InjectRepository(Measure) private measureRepository: Repository<Measure>,
     private readonly geminiAIService: GeminiaiService,
-    private readonly configService: ConfigService,
   ) {}
 
   async create(
     { customer_code, image, measure_datetime, measure_type }: CreateMeasureDto,
     host: string,
   ) {
-    // Se já realizada a leitura no mês disparar: throw new HttpException(undefined, HttpStatus.CONFLICT);
+    /* Get all the measures by customer code and measure type 
+    to check if already exists a measure in the same month */
+    const measuresByCustomerAndType = await this.measureRepository.find({
+      where: { customer_code, measure_type },
+    });
 
+    if (measuresByCustomerAndType.length !== 0) {
+      const measuresDatetimes = measuresByCustomerAndType.map(
+        (measure) => measure.measure_datetime,
+      );
+
+      /* Function to compare if the new measure datetime and
+      the others measures from the same customer and type */
+      const existMeasuresInSameMonth = compareMonths(
+        new Date(measure_datetime),
+        measuresDatetimes,
+      );
+
+      //If already exists a measure with the same type, month and user, throw error
+      if (existMeasuresInSameMonth) throw new ConflictException();
+    }
+
+    //Ready for create a new measure now
     const { measure_uuid } = await this.measureRepository.save({
       customer_code,
       measure_datetime,
       measure_type,
     });
 
+    /* Call this function to use Geminiai to read 
+    the base64 image and return the value bill */
     const { total: measure_value } = await this.geminiAIService.run(
       image,
       measure_uuid,
     );
 
-    const image_url = `http://${host}/images/${measure_uuid}.jpeg`;
+    // Generate url for the image exposed from images module
+    const image_url = generateImageUrl(host, measure_uuid);
 
+    // Update database with measured value by Gemini and image url
     await this.measureRepository.update(
       { measure_uuid },
       {

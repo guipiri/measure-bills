@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  Timestamp,
   UpdateDateColumn,
 } from 'typeorm';
 import { MeasureTypeEnum } from './measures.dto';
@@ -32,11 +31,11 @@ export class Measure {
   has_confirmed: boolean;
 
   @Column({ type: 'timestamp with time zone' })
-  measure_datetime: Timestamp;
+  measure_datetime: Date;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
-  created_at: Timestamp;
+  created_at: Date;
 
   @UpdateDateColumn({ type: 'timestamp with time zone' })
-  updated_at: Timestamp;
+  updated_at: Date;
 }
