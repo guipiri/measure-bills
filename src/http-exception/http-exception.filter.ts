@@ -38,6 +38,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
           error_description = 'Nenhuma leitura encontrada';
           break;
       }
+    } else if (request.path.includes('/confirm')) {
+      switch (status) {
+        case 400:
+          error_code = 'INVALID_DATA';
+          break;
+        case 404:
+          error_code = 'MEASURE_NOT_FOUND';
+          error_description = 'Nenhuma leitura encontrada';
+          break;
+        case 409:
+          error_code = 'CONFIRMATION_DUPLICATE';
+          error_description = 'Leitura do mês já realizada';
+          break;
+      }
     }
     response.status(status).json({
       error_code: error_code ? error_code : name,
