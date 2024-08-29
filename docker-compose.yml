@@ -1,12 +1,22 @@
 services:
   db:
     image: postgres
-    container_name: pg-database
+    container_name: pgdb-measure-bills-prod
     environment:
       POSTGRES_DB: measures-bills
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     volumes:
-      - ./database:/var/lib/postgresql/data
+      - ./database-prod:/var/lib/postgresql/data
     ports:
       - '5432:5432'
+  app:
+    env_file: .env
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: measure-bills-prod
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db

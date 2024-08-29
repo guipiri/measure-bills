@@ -21,15 +21,24 @@ This project was developed using [Nest.js](https://github.com/nestjs/nest) frame
 
 ## Running the app
 
-- In development mode, you will start the database with docker and start a normally Nest app in watch mode.
-- In production mode, you will start the entire application with docker compose. Is's the as run 'docker compose' command.
+##### Development Mode
+
+For .env variables, use .env.example as a reference and docker-compose-dev.yml to catch the database variables. In this mode, you will start the database with docker and start a normally Nest app in watch mode. So just run:
 
 ```bash
-# development
+# development mode
 $ npm run dev
+```
 
+##### Production Mode
+
+It is recommended to use .env to store the database variables. But since the test instructions said that only the GEMINI_API_KEY variable would be stored, I added an OR condition in the database connection. Therefor you just need .env with the GEMINI_API_KEY.
+
+In production mode, you will start the entire application with docker compose. So just run 'docker compose up' command:
+
+```bash
 # production mode
-$ npm run prod
+$ docker compose up
 ```
 
 ## Test

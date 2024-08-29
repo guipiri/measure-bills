@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "dev": "docker compose up -d && npm run start:dev"
+    "dev": "docker compose -f docker-compose-dev.yml up -d && npm run start:dev"
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
