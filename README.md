@@ -27,6 +27,7 @@ For .env variables, use .env.example as a reference and docker-compose-dev.yml t
 
 ```bash
 # development mode
+$ npm install
 $ npm run dev
 ```
 
